@@ -1,5 +1,3 @@
-
-
 from django import forms
 from .models import Skill, Category, OfferedSkill, NeededSkill, SkillExchange
 

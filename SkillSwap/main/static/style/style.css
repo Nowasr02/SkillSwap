@@ -4,6 +4,241 @@
     box-sizing: border-box;
 }
 
+body {
+    margin: 1.5rem 5rem;
+    background-image: url("../images/home-bg-2.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* navbar styling */
+.header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--clr-text-secondary);
+    width: 100%;
+}
+
+.logo {
+    font-family: "Comforter Brush", cursive;
+    font-weight: 400;
+    cursor: pointer;
+    font-style: normal;
+    color: rgb(18, 0, 121);
+    font-size: 3rem;
+    white-space: nowrap;
+    transform: skewX(25deg);
+    transition: all 0.2s ease-in;
+    align-self: center;
+    line-height: 1;
+}
+
+.logo:hover {
+    transform: translate(5%, -5%) skewX(20deg);
+    text-shadow: -0.3rem 0.2rem 0px rgb(7, 138, 0);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+}
+
+.header-wrapper ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+}
+
+.header-wrapper ul li {
+    padding: 10px;
+}
+
+.header-wrapper a:hover {
+    color: var(--clr-primary-main);
+}
+
+.header-wrapper form[role="search"] {
+    display: flex;
+    align-items: center;
+}
+
+.header-wrapper .form-control {
+    padding: 8px 15px;
+    border: 1px solid var(--clr-border-light);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--clr-form-background);
+    transition: all 0.2s ease;
+    width: 200px;
+}
+
+.header-wrapper .form-control:focus {
+    border-color: var(--clr-input-focus);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(110, 143, 106, 0.2);
+}
+
+.material-symbols-outlined {
+    font-size: 24px;
+    line-height: 1;
+}
+
+
+/* person dropdown */
+.nav-person {
+    position: relative;
+    display: inline-block;
+    margin-left: 12px;
+}
+
+.person-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.person-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 180px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    padding: 8px 6px;
+    z-index: 150;
+    display: none;
+}
+
+.person-menu.show {
+    display: block;
+}
+
+.person-menu .menu-item {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #222;
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 2px 0;
+}
+
+.person-menu .menu-item:hover,
+.person-menu .logout-btn:hover {
+    background: #f2f2f2;
+}
+
+.person-menu form {
+    margin: 0;
+}
+
+.person-menu .logout-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #222;
+    font-size: 14px;
+}
+
+
+/* sign form */
+.row.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px); 
+    padding: 20px;
+}
+
+/* form card */
+.user-form {
+    background: #ffffff;
+    padding: 40px 36px;
+    width: 380px;
+    max-width: 95%;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.07);
+    text-align: center;
+}
+
+/* heading */
+.user-form h2 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: -0.5px;
+}
+
+/* inputs */
+.user-form input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid #dedede;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: 0.2s ease;
+    background: #fafafa;
+}
+
+.user-form input:focus {
+    outline: none;
+    border-color: #b5b5ff;
+    box-shadow: 0 0 0 3px rgba(116, 116, 255, 0.2);
+    background: #fff;
+}
+
+/* submit button */
+.submit-btn {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #111;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.submit-btn:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+.submit-btn:active {
+    transform: translateY(1px);
+}
+
+
+
+
 .navbar-brand h2 {
     font-family: "Comforter Brush", cursive;
     font-weight: 400;
@@ -23,7 +258,7 @@
     font-size: 1.2rem !important;
     color: rgb(18, 0, 121) !important;
     /* transform: skewX(20deg); */
-    
+
 }
 
 .nav-link:hover {
@@ -32,11 +267,13 @@
 
 }
 
-.hero-section h1{
+.hero-section h1 {
     color: rgb(18, 0, 121);
 }
 
-.home-page h2,p,h5{
+.home-page h2,
+p,
+h5 {
     color: rgb(18, 0, 121) !important;
 
 }
@@ -49,13 +286,13 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    
+
 }
 
 .icon-circle-blue {
     background: linear-gradient(135deg, #2195f3, #1976d2);
     box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-    
+
 }
 
 .icon-circle-yellow {
@@ -94,4 +331,3 @@
 .skill-item h5 {
     transition: all 0.3s ease;
 }
-

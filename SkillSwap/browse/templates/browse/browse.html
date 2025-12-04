@@ -1,0 +1,46 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block content %}
+
+
+<h1>Browse Profiles</h1>
+
+  <!-- filters -->
+  <form method="get" class="filters">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search users..." />
+    <select name="category">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c.id }}" {% if c.id|stringformat:"s" == selected_category %}selected{% endif %}>{{ c.category }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="skill">
+      <option value="">All skills</option>
+      {% for s in skills %}
+        <option value="{{ s.id }}" {% if s.id|stringformat:"s" == selected_skill %}selected{% endif %}>{{ s.skill }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Filter</button>
+  </form>
+
+
+{% include 'browse/profile_list.html' %}
+
+
+
+<!-- pagination -->
+  <div class="pagination">
+    {% if profiles.has_previous %}
+      <a href="?{% if q %}q={{ q }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_skill %}skill={{ selected_skill }}&{% endif %}page={{ profiles.previous_page_number }}">Previous</a>
+    {% endif %}
+    <span>Page {{ profiles.number }} of {{ profiles.paginator.num_pages }}</span>
+    {% if profiles.has_next %}
+      <a href="?{% if q %}q={{ q }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_skill %}skill={{ selected_skill }}&{% endif %}page={{ profiles.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+
+  
+{% endblock %}

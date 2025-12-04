@@ -1,14 +1,15 @@
 {% extends "main/base.html" %}
 {% load static %}
 
+{% block title %} Sign In - SkillSwap {% endblock %}
+
 {% block content %}
 
-{% block title %} Sign In - SkillSwap {% endblock %}
 
 <div class="row form-container">
 
     <form class="user-form" action="{% url 'accounts:signin_view' %}" method="post">
-        <h2>Login</h2>
+        <h2>Welcome Back!</h2>
 
         {% csrf_token %}
 
