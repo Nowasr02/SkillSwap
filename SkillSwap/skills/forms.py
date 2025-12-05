@@ -1,5 +1,11 @@
 from django import forms
-from .models import Skill, Category, OfferedSkill, NeededSkill, SkillExchange
+from django.contrib.auth.models import User
+from .models import (
+    Skill, Category, OfferedSkill, NeededSkill, 
+    SkillExchange, ExchangeChain, ChainLink
+)
+from django.core.exceptions import ValidationError
+
 
 class CategoryForm(forms.ModelForm):
     
@@ -13,84 +19,63 @@ class SkillForm(forms.ModelForm):
         model = Skill
         fields = "__all__"
 
-class OfferedSkillForm(forms.ModelForm):
 
+class OfferedSkillForm(forms.ModelForm):
     class Meta:
         model = OfferedSkill
         fields = ['skill', 'description', 'availability', 'hourly_rate_equivalent']
         widgets = {
             'skill': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'form-control', 
                 'rows': 3,
-                'placeholder': 'Describe the service you can provide with this skill...'
+                'placeholder': 'Describe what you can do, your experience, examples...'
             }),
             'availability': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g., Weekends 9AM-5PM, Weekdays after 6PM'
+                'placeholder': 'e.g., Weekends, Evenings after 6 PM'
             }),
             'hourly_rate_equivalent': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Estimated market rate per hour (e.g., 25.00)'
-            })
+                'step': '0.01',
+                'min': '1'
+            }),
+        }
+        labels = {
+            'hourly_rate_equivalent': 'Hourly Rate ($)',
         }
 
 class NeededSkillForm(forms.ModelForm):
-
     class Meta:
         model = NeededSkill
         fields = ['skill', 'description', 'urgency', 'max_hourly_rate']
         widgets = {
             'skill': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'form-control', 
                 'rows': 3,
-                'placeholder': 'Describe the service you need...'
+                'placeholder': 'Describe what you need, timeline, specific requirements...'
             }),
             'urgency': forms.Select(attrs={'class': 'form-control'}),
             'max_hourly_rate': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0',
-                'placeholder': 'Max hourly rate you can exchange (optional)'
-            })
+                'min': '1'
+            }),
         }
-        
-class ProposeExchangeForm(forms.ModelForm):
+        labels = {
+            'max_hourly_rate': 'Max Hourly Rate ($) - Optional',
+        }
 
+class SkillExchangeForm(forms.ModelForm):
     class Meta:
         model = SkillExchange
-        fields = [
-            'skill_from_initiator', 
-            'skill_from_responder', 
-            'exchange_type',
-            'initiator_hours_required',
-            'responder_hours_required',
-            'terms', 
-            'proposed_start_date', 
-            'proposed_end_date'
-        ]
-
+        fields = ['terms', 'proposed_start_date', 'proposed_end_date', 'exchange_type']
         widgets = {
-            'skill_from_initiator': forms.Select(attrs={'class': 'form-control'}),
-            'skill_from_responder': forms.Select(attrs={'class': 'form-control'}),
-            'exchange_type': forms.Select(attrs={'class': 'form-control'}),
-            'initiator_hours_required': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.5',
-                'min': '0.5',
-                'placeholder': 'Hours you will provide'
-            }),
-            'responder_hours_required': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.5',
-                'min': '0.5',
-                'placeholder': 'Hours you expect in return'
-            }),
             'terms': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
-                'placeholder': 'Specify the terms of exchange based on hourly rates...'
+                'placeholder': 'Specify the details of the exchange...'
             }),
             'proposed_start_date': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -99,74 +84,138 @@ class ProposeExchangeForm(forms.ModelForm):
             'proposed_end_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
-            })
+            }),
+            'exchange_type': forms.Select(attrs={'class': 'form-control'}),
         }
+
+class ExchangeNegotiationForm(forms.ModelForm):
+    initiator_hours_required = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        min_value=0.1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'})
+    )
+    responder_hours_required = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        min_value=0.1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'})
+    )
     
-    def __init__(self, *args, **kwargs):
-        self.initiator = kwargs.pop('initiator', None)
-        self.responder = kwargs.pop('responder', None)
-        super().__init__(*args, **kwargs)
-        
-        if self.initiator:
-            self.fields['skill_from_initiator'].queryset = OfferedSkill.objects.filter(
-                user=self.initiator, 
-                is_active=True
-            )
-        
-        if self.responder:
-            self.fields['skill_from_responder'].queryset = OfferedSkill.objects.filter(
-                user=self.responder, 
-                is_active=True
-            )
-        
-        if 'skill_from_initiator' in self.data and 'skill_from_responder' in self.data:
-            try:
-                initiator_skill_id = self.data.get('skill_from_initiator')
-                responder_skill_id = self.data.get('skill_from_responder')
-                
-                if initiator_skill_id and responder_skill_id:
-                    initiator_skill = OfferedSkill.objects.get(id=initiator_skill_id)
-                    responder_skill = OfferedSkill.objects.get(id=responder_skill_id)
-                    
-                    rate_a = initiator_skill.hourly_rate_equivalent
-                    rate_b = responder_skill.hourly_rate_equivalent
-                    
-                    if rate_b > 0:
-                        ratio = rate_a / rate_b
-                        self.fields['initiator_hours_required'].initial = 1.0
-                        self.fields['responder_hours_required'].initial = round(float(ratio), 1)
-            except (OfferedSkill.DoesNotExist, ValueError) as e:
-                print(e)
-
-class RespondExchangeForm(forms.ModelForm):
-
     class Meta:
         model = SkillExchange
-        fields = ['status', 'agreed_start_date', 'agreed_end_date']
+        fields = ['terms', 'initiator_hours_required', 'responder_hours_required']
         widgets = {
-            'status': forms.Select(attrs={'class': 'form-control'}),
-            'agreed_start_date': forms.DateInput(attrs={
+            'terms': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        initiator_hours = cleaned_data.get('initiator_hours_required')
+        responder_hours = cleaned_data.get('responder_hours_required')
+        
+        if initiator_hours and responder_hours:
+            if initiator_hours > 100 or responder_hours > 100:
+                raise ValidationError("Hours cannot exceed 100 per exchange.")
+        
+        return cleaned_data
+    
+class ExchangeProposalForm(forms.ModelForm):
+    class Meta:
+        model = ExchangeChain
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'type': 'date'
+                'placeholder': 'e.g., Design-Development-Writing Chain'
             }),
-            'agreed_end_date': forms.DateInput(attrs={
+            'description': forms.Textarea(attrs={
                 'class': 'form-control',
-                'type': 'date'
-            })
+                'rows': 3,
+                'placeholder': 'Describe the purpose of this exchange chain...'
+            }),
         }
 
+class ChainLinkForm(forms.ModelForm):
+    class Meta:
+        model = ChainLink
+        fields = ['gives_skill', 'receives_skill', 'hours_given', 'hours_received']
+        widgets = {
+            'gives_skill': forms.Select(attrs={'class': 'form-control'}),
+            'receives_skill': forms.Select(attrs={'class': 'form-control'}),
+            'hours_given': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'hours_received': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+        }
+    
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            # Limit gives_skill to user's offered skills
+            self.fields['gives_skill'].queryset = OfferedSkill.objects.filter(
+                user=user, is_active=True
+            )
 
-class ExchangeFeedbackForm(forms.Form):
+class UserSearchForm(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Search by username...'
+        })
+    )
 
+class FilterSkillsForm(forms.Form):
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    min_rate = forms.DecimalField(
+        required=False,
+        max_digits=7,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Min rate',
+            'step': '0.01'
+        })
+    )
+    max_rate = forms.DecimalField(
+        required=False,
+        max_digits=7,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Max rate',
+            'step': '0.01'
+        })
+    )
+    search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Search skills...'
+        })
+    )
+
+class RatingForm(forms.Form):
+    RATING_CHOICES = [
+        (5, '⭐⭐⭐⭐⭐ - Excellent'),
+        (4, '⭐⭐⭐⭐ - Good'),
+        (3, '⭐⭐⭐ - Average'),
+        (2, '⭐⭐ - Poor'),
+        (1, '⭐ - Very Poor'),
+    ]
+    
     rating = forms.ChoiceField(
-        choices=[(i, f'{i} stars') for i in range(1, 6)],
-        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+        choices=RATING_CHOICES,
+        widget=forms.RadioSelect
     )
     feedback = forms.CharField(
+        required=False,
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 3,
-            'placeholder': 'Share your experience with this exchange...'
-        }),
-        required=False
+            'placeholder': 'Optional feedback...'
+        })
     )

@@ -1,0 +1,58 @@
+{% extends 'skills/base.html' %}
+{% block title %}Manage Offered Skills - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Offered Skills</h2>
+    <a href="{% url 'skills:offer_skill' %}" class="btn btn-success">
+        <i class="bi bi-plus-circle me-2"></i>Offer New Skill
+    </a>
+</div>
+
+{% if offered_skills %}
+    <div class="row">
+        {% for skill in offered_skills %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title">{{ skill.skill.skill }}</h5>
+                                <span class="badge bg-{% if skill.is_active %}success{% else %}secondary{% endif %}">
+                                    {% if skill.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                            <span class="badge bg-info rate-badge">${{ skill.hourly_rate_equivalent }}/hr</span>
+                        </div>
+                        
+                        <p class="card-text">{{ skill.description|truncatewords:30 }}</p>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>Availability: {{ skill.availability }}
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="toggle_active" value="1">
+                                <input type="hidden" name="skill_id" value="{{ skill.id }}">
+                                <button type="submit" class="btn btn-sm btn-{% if skill.is_active %}warning{% else %}success{% endif %}">
+                                    {% if skill.is_active %}Deactivate{% else %}Activate{% endif %}
+                                </button>
+                            </form>
+                            <small class="text-muted">Updated: {{ skill.updated_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <p>You haven't offered any skills yet.</p>
+        <a href="{% url 'skills:offer_skill' %}" class="btn btn-success">Offer Your First Skill</a>
+    </div>
+{% endif %}
+{% endblock %}

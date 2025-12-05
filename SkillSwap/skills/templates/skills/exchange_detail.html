@@ -1,0 +1,197 @@
+{% extends 'skills/base.html' %}
+{% block title %}Exchange Details - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Exchange Details</h4>
+        <span class="badge bg-{{ exchange.status }} fs-6">{{ exchange.status|title }}</span>
+    </div>
+    
+    <div class="card-body">
+        <!-- Exchange Overview -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">From {{ exchange.initiator.username }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if exchange.skill_from_initiator %}
+                            <h6>{{ exchange.skill_from_initiator.skill.skill }}</h6>
+                            <p><strong>Rate:</strong> ${{ exchange.skill_from_initiator.hourly_rate_equivalent }}/hr</p>
+                            <p><strong>Description:</strong> {{ exchange.skill_from_initiator.description }}</p>
+                        {% else %}
+                            <p class="text-muted">Skill not specified</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">From {{ exchange.responder.username }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if exchange.skill_from_responder %}
+                            <h6>{{ exchange.skill_from_responder.skill.skill }}</h6>
+                            <p><strong>Rate:</strong> ${{ exchange.skill_from_responder.hourly_rate_equivalent }}/hr</p>
+                            <p><strong>Description:</strong> {{ exchange.skill_from_responder.description }}</p>
+                        {% else %}
+                            <p class="text-muted">Skill not specified yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fairness Analysis -->
+        {% if fairness_report %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Fairness Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p class="mb-0">{{ fairness_report.summary }}</p>
+                    </div>
+                    
+                    {% if fairness_report.details %}
+                        <h6>Details:</h6>
+                        <ul>
+                            {% for detail in fairness_report.details %}
+                                <li>{{ detail }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    {% if adjustment_suggestion %}
+                        <div class="alert alert-warning mt-3">
+                            <h6><i class="bi bi-lightbulb me-2"></i>Suggestion:</h6>
+                            <p class="mb-0">{{ adjustment_suggestion }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Exchange Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Exchange Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Type:</strong> {{ exchange.exchange_type|title }}</p>
+                        <p><strong>Created:</strong> {{ exchange.created_at|date:"M d, Y H:i" }}</p>
+                        {% if exchange.accepted_at %}
+                            <p><strong>Accepted:</strong> {{ exchange.accepted_at|date:"M d, Y H:i" }}</p>
+                        {% endif %}
+                        {% if exchange.started_at %}
+                            <p><strong>Started:</strong> {{ exchange.started_at|date:"M d, Y H:i" }}</p>
+                        {% endif %}
+                        {% if exchange.completed_at %}
+                            <p><strong>Completed:</strong> {{ exchange.completed_at|date:"M d, Y H:i" }}</p>
+                        {% endif %}
+                        <p><strong>Last Updated:</strong> {{ exchange.last_updated|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Terms & Communication</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if exchange.terms %}
+                            <p><strong>Terms:</strong> {{ exchange.terms }}</p>
+                        {% endif %}
+                        <p><strong>Other Party:</strong> {{ other_party.username }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if is_initiator or is_responder %}
+                    <div class="btn-group" role="group">
+                        {% if exchange.status == 'pending' and is_responder %}
+                            <form method="post" action="{% url 'skills:update_exchange_status' exchange.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="under_review">
+                                <button type="submit" class="btn btn-primary me-2">Review Proposal</button>
+                            </form>
+                        {% endif %}
+                        
+                        {% if exchange.status in ['pending', 'under_review', 'negotiating'] %}
+                            {% if is_initiator or is_responder %}
+                                <form method="post" action="{% url 'skills:update_exchange_status' exchange.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="cancelled">
+                                    <button type="submit" class="btn btn-danger me-2">Cancel Exchange</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% if exchange.status == 'accepted' and is_initiator %}
+                            <form method="post" action="{% url 'skills:update_exchange_status' exchange.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="in_progress">
+                                <button type="submit" class="btn btn-success me-2">Start Exchange</button>
+                            </form>
+                        {% endif %}
+                        
+                        {% if exchange.status == 'in_progress' and is_initiator %}
+                            <form method="post" action="{% url 'skills:update_exchange_status' exchange.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="btn btn-success me-2">Mark as Complete</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <a href="{% url 'skills:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+        
+        <!-- Rating Section -->
+        {% if exchange.status == 'completed' and not exchange.get_user_rating %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Rate Your Experience</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'skills:submit_rating' exchange.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating (1-5)</label>
+                            <select name="rating" id="rating" class="form-select" required>
+                                <option value="">Select rating</option>
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="3">3 - Good</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="1">1 - Poor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedback" class="form-label">Feedback (Optional)</label>
+                            <textarea name="feedback" id="feedback" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Rating</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
