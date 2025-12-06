@@ -6,7 +6,7 @@
 
 body {
     margin: 1.5rem 5rem;
-    background-image: url("../images/home-bg-2.jpg");
+    /* background-image: url("../images/home-bg-2.jpg"); */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -251,7 +251,7 @@ a {
 
 .navbar-brand h2:hover {
     transform: translate(5%, -5%) skewX(20deg);
-    text-shadow: -0.3rem 0.2rem 0px rgb(7, 138, 0);
+    /* text-shadow: -0.3rem 0.2rem 0px rgb(7, 138, 0); */
 }
 
 .nav-link {
@@ -263,7 +263,7 @@ a {
 
 .nav-link:hover {
     transform: translate(5%, -5%) skewX(10deg);
-    text-shadow: -0.2rem 0.1rem 0px rgb(7, 138, 0);
+    /* text-shadow: -0.2rem 0.1rem 0px rgb(7, 138, 0); */
 
 }
 
@@ -315,7 +315,6 @@ h5 {
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
 
-/* Hover Effects */
 .skill-item {
     transition: all 0.3s ease;
 }

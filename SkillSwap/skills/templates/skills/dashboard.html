@@ -1,0 +1,234 @@
+{% extends 'main/base.html' %}
+{% block title %}Dashboard - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-6">Welcome, {{ user.username }}!</h1>
+        <p class="text-muted">Manage your skill exchanges and find opportunities.</p>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">{{ user_offered_skills.count }}</h5>
+                <p class="card-text">Skills Offered</p>
+                <a href="{% url 'skills:manage_offered_skills' %}" class="text-white">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">{{ user_needed_skills.count }}</h5>
+                <p class="card-text">Skills Needed</p>
+                <a href="{% url 'skills:manage_needed_skills' %}" class="text-white">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">{{ active_exchanges.count }}</h5>
+                <p class="card-text">Active Exchanges</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">{{ exchange_chains.count }}</h5>
+                <p class="card-text">Exchange Chains</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Activity -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6>Initiated Exchanges</h6>
+                        {% if initiated_exchanges %}
+                            <div class="list-group">
+                                {% for exchange in initiated_exchanges %}
+                                    <a href="{% url 'skills:exchange_detail' exchange.id %}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <small>To: {{ exchange.responder.username }}</small>
+                                            <span class="badge bg-{{ exchange.status }}">{{ exchange.status|title }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ exchange.created_at|timesince }} ago</small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No initiated exchanges</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <h6>Received Exchanges</h6>
+                        {% if responded_exchanges %}
+                            <div class="list-group">
+                                {% for exchange in responded_exchanges %}
+                                    <a href="{% url 'skills:exchange_detail' exchange.id %}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <small>From: {{ exchange.initiator.username }}</small>
+                                            <span class="badge bg-{{ exchange.status }}">{{ exchange.status|title }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ exchange.created_at|timesince }} ago</small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No received exchanges</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Active Exchanges</h6>
+                    {% if active_exchanges %}
+                        <div class="list-group">
+                            {% for exchange in active_exchanges|slice:":5" %}
+                                <a href="{% url 'skills:exchange_detail' exchange.id %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <small>
+                                            {% if exchange.initiator == user %}
+                                                You ↔ {{ exchange.responder.username }}
+                                            {% else %}
+                                                {{ exchange.initiator.username }} ↔ You
+                                            {% endif %}
+                                        </small>
+                                        <span class="badge bg-{{ exchange.status }}">{{ exchange.status|title }}</span>
+                                    </div>
+                                    <small class="text-muted">Updated {{ exchange.last_updated|timesince }} ago</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No active exchanges</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions & Chains -->
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-fill me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'skills:offer_skill' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Offer a Skill
+                    </a>
+                    <a href="{% url 'skills:need_skill' %}" class="btn btn-primary">
+                        <i class="bi bi-question-circle me-2"></i>Request a Skill
+                    </a>
+                    <a href="{% url 'skills:find_matches' %}" class="btn btn-warning">
+                        <i class="bi bi-search me-2"></i>Find Matches
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Exchange Chains -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Exchange Chains</h5>
+            </div>
+            <div class="card-body">
+                {% if exchange_chains %}
+                    <div class="list-group">
+                        {% for chain in exchange_chains %}
+                            <a href="{% url 'skills:chain_detail' chain.id %}" class="list-group-item list-group-item-action">
+                                <h6 class="mb-1">{{ chain.name }}</h6>
+                                <small class="text-muted">{{ chain.participants_count }} participants</small>
+                                <span class="badge bg-{{ chain.status }} float-end">{{ chain.status|title }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No exchange chains</p>
+                    <a href="{% url 'skills:create_chain' %}" class="btn btn-outline-primary btn-sm">Create Chain</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Completed Exchanges -->
+{% if completed_exchanges %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-check-circle-fill me-2 text-success"></i>Recently Completed</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Exchange</th>
+                                <th>Partner</th>
+                                <th>Completed</th>
+                                <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exchange in completed_exchanges %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'skills:exchange_detail' exchange.id %}">
+                                            {{ exchange.skill_from_initiator.skill.skill }} ↔ 
+                                            {{ exchange.skill_from_responder.skill.skill }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if exchange.initiator == user %}
+                                            {{ exchange.responder.username }}
+                                        {% else %}
+                                            {{ exchange.initiator.username }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exchange.completed_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if exchange.initiator == user %}
+                                            {% if exchange.initiator_rating %}
+                                                {{ exchange.initiator_rating }}/5
+                                            {% else %}
+                                                <small class="text-muted">Not rated</small>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if exchange.responder_rating %}
+                                                {{ exchange.responder_rating }}/5
+                                            {% else %}
+                                                <small class="text-muted">Not rated</small>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

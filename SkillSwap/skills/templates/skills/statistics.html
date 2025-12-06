@@ -1,0 +1,106 @@
+{% extends 'main/base.html' %}
+{% block title %}Statistics - SkillSwap{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Platform Statistics</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h2 class="card-title">{{ total_exchanges }}</h2>
+                <p class="card-text">Total Exchanges</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h2 class="card-title">{{ completed_exchanges }}</h2>
+                <p class="card-text">Completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <h2 class="card-title">{{ pending_exchanges }}</h2>
+                <p class="card-text">Pending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h2 class="card-title">{{ avg_fairness }}%</h2>
+                <p class="card-text">Avg Fairness</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">User Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h3 class="card-title">{{ total_users }}</h3>
+                                <p class="card-text">Total Users</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h3 class="card-title">{{ active_users }}</h3>
+                                <p class="card-text">Active Users</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Most Traded Skills</h5>
+            </div>
+            <div class="card-body">
+                {% if popular_skills %}
+                    <div class="list-group">
+                        {% for skill in popular_skills %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ skill.skill }}</span>
+                                <span class="badge bg-primary rounded-pill">{{ skill.exchange_count }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No skill trading data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Quick Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="btn-group" role="group">
+            <a href="{% url 'admin:index' %}" class="btn btn-outline-primary">Django Admin</a>
+            <a href="{% url 'skills:cat_skill_add' %}" class="btn btn-outline-info">Add Categories/Skills</a>
+            <a href="{% url 'skills:dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

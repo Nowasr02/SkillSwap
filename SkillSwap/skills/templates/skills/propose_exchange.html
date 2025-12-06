@@ -1,0 +1,79 @@
+{% extends 'main/base.html' %}
+{% block title %}Propose Exchange - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Propose Exchange</h4>
+            </div>
+            <div class="card-body">
+                <!-- Needed Skill Info -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">Skill Needed</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5>{{ needed_skill.skill.skill }}</h5>
+                        <p><strong>Needed by:</strong> {{ needed_skill.user.username }}</p>
+                        <p><strong>Urgency:</strong> {{ needed_skill.urgency }}</p>
+                        {% if needed_skill.max_hourly_rate %}
+                            <p><strong>Max Rate:</strong> ${{ needed_skill.max_hourly_rate }}/hr</p>
+                        {% endif %}
+                        <p><strong>Description:</strong> {{ needed_skill.description }}</p>
+                    </div>
+                </div>
+                
+                {% if matching_skills %}
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5>Select Your Skill to Offer</h5>
+                            <p class="text-muted">Choose from your skills that match their need.</p>
+                            
+                            <div class="list-group">
+                                {% for skill in matching_skills %}
+                                    <label class="list-group-item">
+                                        <input type="radio" name="user_skill_id" value="{{ skill.id }}" 
+                                               class="form-check-input me-2" required>
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <div>
+                                                <h6 class="mb-1">{{ skill.skill.skill }}</h6>
+                                                <p class="mb-1">{{ skill.description|truncatewords:20 }}</p>
+                                                <small class="text-muted">Your rate: ${{ skill.hourly_rate_equivalent }}/hr</small>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-info">${{ skill.hourly_rate_equivalent }}/hr</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Note:</strong> You're offering to help with {{ needed_skill.user.username }}'s need. 
+                            They will need to propose something in return for a complete exchange.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'skills:find_matches' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                Send Proposal
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <p>You don't have any active skills that match this need.</p>
+                        <a href="{% url 'skills:offer_skill' %}" class="btn btn-success">Offer a Skill</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

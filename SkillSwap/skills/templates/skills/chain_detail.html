@@ -1,0 +1,52 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Exchange Chain Details</h2>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ chain.name }}</h3>
+            <span class="badge bg-{% if chain.status == 'active' %}success{% elif chain.status == 'completed' %}info{% else %}warning{% endif %}">
+                {{ chain.get_status_display }}
+            </span>
+        </div>
+        <div class="card-body">
+            <p><strong>Created:</strong> {{ chain.created_at|date:"F j, Y" }}</p>
+            <p><strong>Participants:</strong> {{ chain.participants.count }}</p>
+            
+            <h4>Chain Links</h4>
+            <div class="list-group">
+                {% for link in chain.links.all %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>{{ link.offered_skill.user.username }}</strong> 
+                            offers <em>{{ link.offered_skill.skill.skill }}</em>
+                            @ ${{ link.offered_skill.hourly_rate_equivalent }}/hr
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">
+                                {{ link.hours_offered }}h → {{ link.hours_received }}h
+                            </small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <strong>To:</strong> {{ link.needed_skill.user.username }}
+                        <span class="badge bg-secondary ms-2">{{ link.get_status_display }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted">No links in this chain yet.</div>
+                {% endfor %}
+            </div>
+            
+            {% if chain.is_participant %}
+            <div class="mt-4">
+                <a href="{% url 'skills:manage_chain' chain.id %}" class="btn btn-primary">Manage Chain</a>
+                <a href="{% url 'skills:dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

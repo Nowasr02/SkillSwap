@@ -4,18 +4,39 @@ from . import views
 app_name = "skills"
 
 urlpatterns = [
-    path("add/category/skill", views.cat_skill_add, name="cat_skill_add"),
-    path('manage/', views.manage_skills, name='manage_skills'),
-    path('find-exchanges/', views.find_exchanges, name='find_exchanges'),
-    path('exchange/propose/<int:user_id>/', views.propose_exchange, name='propose_exchange'),
-    path('exchange/propose/<int:user_id>/<int:offering_id>/', views.propose_exchange, name='propose_exchange_with_offering'),
-    path('exchanges/', views.my_exchanges, name='my_exchanges'),
-    path('exchange/<int:exchange_id>/', views.view_exchange, name='view_exchange'),
-    path('exchange/<int:exchange_id>/<str:action>/', views.update_exchange_status, name='update_exchange_status'),
-    path('broker/', views.broker_dashboard, name='broker_dashboard'),
-    path('broker/create-chain/', views.create_chain_proposal, name='create_chain'),
-    path('chain/<int:chain_id>/', views.view_chain, name='view_chain'),
-    path('chain/<int:chain_id>/<str:response>/', views.respond_to_chain, name='respond_to_chain'),
-    path('hour-pool/', views.hour_pool, name='hour_pool'),
+    
+    path('add-category-skill/', views.cat_skill_add, name='cat_skill_add'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    
+    # Skill Management
+    path('offer-skill/', views.offer_skill, name='offer_skill'),
+    path('need-skill/', views.need_skill, name='need_skill'),
+    path('manage-offered-skills/', views.manage_offered_skills, name='manage_offered_skills'),
+    path('manage-needed-skills/', views.manage_needed_skills, name='manage_needed_skills'),
+    path('find-matches/', views.find_matches, name='find_matches'),
+    
+    # Exchange Management
+    path('initiate-exchange/<int:offered_skill_id>/', views.initiate_exchange, name='initiate_exchange'),
+    path('propose-exchange/<int:needed_skill_id>/', views.propose_exchange, name='propose_exchange'),
+    path('exchange/<int:exchange_id>/', views.exchange_detail, name='exchange_detail'),
+    path('exchange/<int:exchange_id>/update-status/', views.update_exchange_status, name='update_exchange_status'),
+    path('exchange/<int:exchange_id>/update-terms/', views.update_exchange_terms, name='update_exchange_terms'),
+    path('exchange/<int:exchange_id>/rate/', views.submit_rating, name='submit_rating'),
+    path('chains/<int:chain_id>/', views.chain_detail, name='chain_detail'),
+    path('chains/create/', views.create_chain, name='create_chain'),
+    path('chains/<int:chain_id>/manage/', views.manage_chain, name='manage_chain'),
+    path('chains/<int:chain_id>/join/', views.join_chain, name='join_chain'),
+    path('chains/', views.exchange_chains, name='exchange_chains'),
+    
+    # API Endpoints
+    path('api/user-skills/', views.get_user_offered_skills, name='api_user_skills'),
+    path('api/calculate-exchange/', views.calculate_fair_exchange_api, name='api_calculate_exchange'),
+    path('api/potential-exchanges/', views.get_potential_exchanges, name='api_potential_exchanges'),
+    
+    # Admin & Reports
+    path('statistics/', views.exchange_statistics, name='statistics'),
+]
 
-] 
+# Error handlers
+handler404 = views.handler404
+handler500 = views.handler500

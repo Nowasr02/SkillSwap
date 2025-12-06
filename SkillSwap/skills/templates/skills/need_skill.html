@@ -1,0 +1,72 @@
+{% extends 'main/base.html' %}
+{% block title %}Request a Skill - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>Request a Skill</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Please correct the errors below:</strong>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.skill.id_for_label }}" class="form-label">Skill Needed *</label>
+                        {{ form.skill }}
+                        <div class="form-text">Select or enter the skill you need.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                        {{ form.description }}
+                        <div class="form-text">Describe what you need and any specific requirements.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.urgency.id_for_label }}" class="form-label">Urgency</label>
+                            {{ form.urgency }}
+                            <div class="form-text">How urgently do you need this skill?</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.max_hourly_rate.id_for_label }}" class="form-label">Max Hourly Rate ($)</label>
+                            {{ form.max_hourly_rate }}
+                            <div class="form-text">Maximum you're willing to pay per hour (optional).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> If you have an existing request for this skill, it will be updated instead of creating a new one.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'skills:dashboard' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>Request Skill
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Manage Exchange Chain: {{ chain.name }}</h2>
+    <p>Status: {{ chain.get_status_display }}</p>
+    
+    <h3>Chain Links</h3>
+    <ul>
+        {% for link in chain.links.all %}
+        <li>
+            {{ link.offered_skill.user.username }} offers {{ link.offered_skill.skill.skill }}
+            to {{ link.needed_skill.user.username }}
+            ({{ link.hours_offered }} hours for {{ link.hours_received }} hours)
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <h3>Add New Link</h3>
+    <form method="post">
+        {% csrf_token %}
+        <select name="offered_skill_id">
+            {% for skill in available_skills %}
+            <option value="{{ skill.id }}">{{ skill.skill.skill }} (${{ skill.hourly_rate_equivalent }}/hr)</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="action" value="add_link">
+        <button type="submit" class="btn btn-primary">Add Link</button>
+    </form>
+    
+    <a href="{% url 'skills:chain_detail' chain.id %}" class="btn btn-secondary">View Chain Details</a>
+    <a href="{% url 'skills:dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}
