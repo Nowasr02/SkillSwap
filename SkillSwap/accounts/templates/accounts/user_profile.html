@@ -171,10 +171,13 @@
         <div class="layout">
             <!-- LEFT COLUMN -->
             <div class="left">
+
                 <div class="avatar-wrap">
-                    
-                    <img src="{{ profile.avatar.url }}" class="avatar-img"/>
-                       
+                    {% if profile and profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" class="avatar-img" />
+                    {% else %}
+                    <img src="/static/images/default-avatar.png" class="avatar-img" />
+                    {% endif %}
                 </div>
 
                 <div class="joined">
@@ -186,51 +189,55 @@
 
                 <div class="skills-box">
                     <div class="skills-title">my skills</div>
+
                     <div class="skills-inner">
-                        {# Display offered skills (from view) - if none, show nothing inside box #}
-                        {% if offered_skills %}
                         {% for s in offered_skills %}
-                        {# s is OfferedSkill instance; s.skill uses Skill.__str__ #}
                         <span class="skill-tag">{{ s.skill }}</span>
+                        {% empty %}
                         {% endfor %}
-                        {% endif %}
                     </div>
+
                 </div>
+
+
             </div>
 
             <!-- RIGHT COLUMN -->
             <div class="right">
-                <div class="edit-title">edit</div>
+                <!-- <div class="edit-title">edit</div> -->
+                 <a href="{% url 'accounts:profile_form' %}" class="edit-button">Edit</a>
+
 
                 <div class="field">
                     <div class="input-placeholder">
-                        {% if profile.user.username %}{{ profile.user.username }}{% endif %}
+                        {{ request.user.username }}
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="input-placeholder">
-                        {% if profile.user.email %}{{ profile.user.email }}{% endif %}
+                        {{ request.user.email }}
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="input-placeholder">
-                        {% if profile.user.first_name %}{{ profile.user.first_name }}{% endif %}
+                        {{ request.user.first_name }}
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="input-placeholder">
-                        {% if profile.user.last_name %}{{ profile.user.last_name }}{% endif %}
+                        {{ request.user.last_name }}
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="textarea-placeholder">
-                        {% if profile.bio %}{{ profile.bio }}{% endif %}
+                        {% if profile and profile.bio %}{{ profile.bio }}{% endif %}
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

@@ -27,7 +27,7 @@ def signup_view(request : HttpRequest):
 
             new_user.save()
 
-            messages.success(request, "Registered User Successfully", "alert-success")
+            messages.success(request, "registered successfully", "alert-success")
             return redirect("accounts:signin_view")
         except Exception as e: 
             print(e)
@@ -80,13 +80,18 @@ def category_skills(request : HttpRequest, pk):
     
 def profile_form(request : HttpRequest):
     
-    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    # profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    
+    profile = UserProfile.objects.filter(user=request.user).first()
     
     all_skills = Skill.objects.order_by('skill')
     all_skills_data = list(all_skills.values('id', 'skill'))
     all_skills_json = mark_safe(json.dumps(list(all_skills_data)))
 
     if request.method == "POST":
+        if profile is None:
+            profile = UserProfile(user=request.user)
+            
         bio = request.POST.get("bio", "").strip()
         avatar = request.FILES.get("avatar")
 
@@ -126,7 +131,8 @@ def profile_form(request : HttpRequest):
         if needed_objs:
             NeededSkill.objects.bulk_create(needed_objs)
             
-        return redirect("accounts:profile_form")
+        messages.success(request, "updates are saved successfully", "alert-success")
+        return redirect("accounts:user_profile")
 
     current_offered = list(Skill.objects.filter(offered_by_users__user=request.user).values_list('id', flat=True))
     current_needed  = list(Skill.objects.filter(needed_by_users__user=request.user).values_list('id', flat=True))
@@ -151,10 +157,14 @@ def profile_form(request : HttpRequest):
 @login_required
 def user_profile(request : HttpRequest):    
     
-    profile = get_object_or_404(UserProfile.objects.select_related('user'), user=request.user)
+    profile = UserProfile.objects.select_related('user').filter(user=request.user).first()
 
-    offered = profile.user.offered_skills.select_related('skill').filter(is_active=True)
-    needed  = profile.user.needed_skills.select_related('skill').filter(is_active=True)
+    if profile:
+        offered = profile.user.offered_skills.select_related('skill').filter(is_active=True)
+        needed  = profile.user.needed_skills.select_related('skill').filter(is_active=True)
+    else:
+        offered = OfferedSkill.objects.none()
+        needed = NeededSkill.objects.none()
 
     return render(request, 'accounts/user_profile.html', {
         'profile': profile,
