@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.utils import timezone
 from .models import (
-    Skill, Category, OfferedSkill, NeededSkill, 
+    Skill, OfferedSkill, NeededSkill, 
     SkillExchange, ExchangeChain, ChainLink, BrokerProposal
 )
 from .forms import (
@@ -24,6 +24,7 @@ from django.db.models import Sum
 
 # Create your views here.
 
+@login_required
 def cat_skill_add(request):
     if request.method == 'POST':
         skill_name = request.POST.get('skill', '').strip()
@@ -43,35 +44,43 @@ def dashboard(request: HttpRequest):
     user = request.user
 
     context = {
-        'user_offered_skills':OfferedSkill.objects.filter(user=user, is_active= True),
-        'user_needed_skills': NeededSkill.objects.filter(user=user, is_active= True),
-        'initiated_exchanges': SkillExchange.objects.filter(initiator = user).order_by('-created_at')[:5],
-        'responded_exchanges': SkillExchange.objects.filter(responder= user).order_by('-created_at')[:5],
-        'active_exchanges': SkillExchange.objects.filter(Q(initiator=user) | Q(responder=user), status__in= ['pending', 'under_review', 'negotiating', 'accepted', 'in_progress']).order_by('-last_updated'),
-        'completed_exchanges': SkillExchange.objects.filter(Q(initiator=user) | Q(responder=user), status='completed').order_by('-completed_at')[:10],
+        'user_offered_skills': OfferedSkill.objects.filter(user=user, is_active=True),
+        'user_needed_skills': NeededSkill.objects.filter(user=user, is_active=True),
+        'initiated_exchanges': SkillExchange.objects.filter(initiator=user).order_by('-created_at')[:5],
+        'responded_exchanges': SkillExchange.objects.filter(responder=user).order_by('-created_at')[:5],
+        'active_exchanges': SkillExchange.objects.filter(
+            Q(initiator=user) | Q(responder=user), 
+            status__in=['pending', 'under_review', 'negotiating', 'accepted', 'in_progress']
+        ).order_by('-last_updated'),
+        'completed_exchanges': SkillExchange.objects.filter(
+            Q(initiator=user) | Q(responder=user), 
+            status='completed'
+        ).order_by('-completed_at')[:10],
         'exchange_chains': ExchangeChain.objects.filter(chain_links__user=user).distinct()[:5],
     }
 
     return render(request, 'skills/dashboard.html', context)
 
 @login_required
-def offer_skill(request:HttpRequest):
+def offer_skill(request: HttpRequest):
     if request.method == "POST":
         form = OfferedSkillForm(request.POST)
         if form.is_valid():
-            offered_skill = form.save(commit= False)
+            offered_skill = form.save(commit=False)
             offered_skill.user = request.user
 
-            existing = OfferedSkill.objects.filter(user = request.user, skill= offered_skill.skill).first()
+            existing = OfferedSkill.objects.filter(
+                user=request.user, 
+                skill=offered_skill.skill
+            ).first()
 
             if existing:
-                existing.is_active= True
-                existing.description= offered_skill.description
-                existing.availability= offered_skill.availability
-                existing.hourly_rate_equivalent=offered_skill.hourly_rate_equivalent
+                existing.is_active = True
+                existing.description = offered_skill.description
+                existing.availability = offered_skill.availability
+                existing.hourly_rate_equivalent = offered_skill.hourly_rate_equivalent
                 existing.save()
-                messages.success(request, 'Skill offer updated successfuly!')
-
+                messages.success(request, 'Skill offer updated successfully!')
             else:
                 offered_skill.save()
                 messages.success(request, 'Skill offered successfully!')
@@ -80,10 +89,10 @@ def offer_skill(request:HttpRequest):
     else: 
         form = OfferedSkillForm()
 
-        return render(request, 'skills/offer_skill.html', {'form':form})
+    return render(request, 'skills/offer_skill.html', {'form': form})
 
 @login_required
-def need_skill(request:HttpRequest):
+def need_skill(request: HttpRequest):
     if request.method == 'POST':
         form = NeededSkillForm(request.POST)
         if form.is_valid():
@@ -106,7 +115,7 @@ def need_skill(request:HttpRequest):
                 needed_skill.save()
                 messages.success(request, 'Skill need posted successfully!')
             
-            return redirect('dashboard')
+            return redirect('skills:dashboard')
     else:
         form = NeededSkillForm()
     
@@ -123,7 +132,7 @@ def manage_offered_skills(request):
         skill.is_active = not skill.is_active
         skill.save()
         messages.success(request, f'Skill {"activated" if skill.is_active else "deactivated"}!')
-        return redirect('manage_offered_skills')
+        return redirect('skills:manage_offered_skills')
     
     return render(request, 'skills/manage_offered_skills.html', {
         'offered_skills': offered_skills
@@ -140,7 +149,7 @@ def manage_needed_skills(request):
         skill.is_active = not skill.is_active
         skill.save()
         messages.success(request, f'Skill need {"activated" if skill.is_active else "deactivated"}!')
-        return redirect('manage_needed_skills')
+        return redirect('skills:manage_needed_skills')
     
     return render(request, 'skills/manage_needed_skills.html', {
         'needed_skills': needed_skills
@@ -233,7 +242,7 @@ def initiate_exchange(request, offered_skill_id):
         )
         
         messages.success(request, f'Exchange proposal sent to {target_skill.user.username}!')
-        return redirect('exchange_detail', exchange_id=exchange.id)
+        return redirect('skills:exchange_detail', exchange_id=exchange.id)
     
     return render(request, 'skills/initiate_exchange.html', {
         'target_skill': target_skill,
@@ -264,9 +273,6 @@ def propose_exchange(request, needed_skill_id):
         user_skill_id = request.POST.get('user_skill_id')
         user_skill = get_object_or_404(OfferedSkill, id=user_skill_id, user=request.user)
         
-        # Check if user has an offered skill that the other person might want
-        # (This is simplified - in reality you'd need to check their needs)
-        
         # Create exchange
         exchange = SkillExchange.objects.create(
             initiator=request.user,
@@ -279,7 +285,7 @@ def propose_exchange(request, needed_skill_id):
         )
         
         messages.success(request, f'Exchange proposal sent to {needed_skill.user.username}!')
-        return redirect('exchange_detail', exchange_id=exchange.id)
+        return redirect('skills:exchange_detail', exchange_id=exchange.id)
     
     return render(request, 'skills/propose_exchange.html', {
         'needed_skill': needed_skill,
@@ -294,7 +300,7 @@ def exchange_detail(request, exchange_id):
     # Check if user is participant
     if not exchange.is_participant(request.user):
         messages.error(request, "You don't have permission to view this exchange.")
-        return redirect('dashboard')
+        return redirect('skills:dashboard')
     
     # Get fairness analysis
     fairness_report = exchange.get_detailed_fairness_report()
@@ -357,7 +363,7 @@ def update_exchange_status(request, exchange_id):
         messages.info(request, "Please rate your exchange partner!")
     
     messages.success(request, f'Exchange status updated to {new_status}.')
-    return redirect('exchange_detail', exchange_id=exchange.id)
+    return redirect('skills:exchange_detail', exchange_id=exchange.id)
 
 @login_required
 @require_POST
@@ -379,7 +385,7 @@ def update_exchange_terms(request, exchange_id):
         exchange.save()
         messages.success(request, 'Terms updated successfully.')
     
-    return redirect('exchange_detail', exchange_id=exchange.id)
+    return redirect('skills:exchange_detail', exchange_id=exchange.id)
 
 @login_required
 @require_POST
@@ -405,7 +411,7 @@ def submit_rating(request, exchange_id):
     
     exchange.save()
     messages.success(request, 'Thank you for your rating!')
-    return redirect('exchange_detail', exchange_id=exchange.id)
+    return redirect('skills:exchange_detail', exchange_id=exchange.id)
 
 @login_required
 def chain_detail(request, chain_id):
@@ -445,7 +451,7 @@ def create_chain(request):
             chain.save()
             
             messages.success(request, 'Exchange chain created! Start adding participants.')
-            return redirect('manage_chain', chain_id=chain.id)
+            return redirect('skills:manage_chain', chain_id=chain.id)
     else:
         form = ExchangeProposalForm()
     
@@ -490,14 +496,9 @@ def manage_chain(request, chain_id):
             chain.proposed_at = timezone.now()
             chain.save()
             
-            # Notify all participants
-            for link in links:
-                # In reality, send notification/email
-                pass
-            
             messages.success(request, 'Chain proposed to all participants!')
         
-        return redirect('manage_chain', chain_id=chain.id)
+        return redirect('skills:manage_chain', chain_id=chain.id)
     
     # Get potential participants (users with offered skills)
     potential_users = User.objects.exclude(
@@ -520,12 +521,12 @@ def join_chain(request, chain_id):
     # Check if chain is open for joining
     if chain.status not in ['forming', 'proposed']:
         messages.error(request, 'This chain is not open for new participants.')
-        return redirect('chain_detail', chain_id=chain.id)
+        return redirect('skills:chain_detail', chain_id=chain.id)
     
     # Check if user is already in chain
     if chain.chain_links.filter(user=request.user).exists():
         messages.error(request, 'You are already in this chain.')
-        return redirect('chain_detail', chain_id=chain.id)
+        return redirect('skills:chain_detail', chain_id=chain.id)
     
     # User needs to specify what they give and receive
     gives_skill_id = request.POST.get('gives_skill_id')
@@ -533,7 +534,7 @@ def join_chain(request, chain_id):
     
     if not gives_skill_id or not receives_skill_id:
         messages.error(request, 'Please specify both skills you give and receive.')
-        return redirect('chain_detail', chain_id=chain.id)
+        return redirect('skills:chain_detail', chain_id=chain.id)
     
     gives_skill = get_object_or_404(OfferedSkill, id=gives_skill_id, user=request.user)
     receives_skill = get_object_or_404(OfferedSkill, id=receives_skill_id)
@@ -549,7 +550,29 @@ def join_chain(request, chain_id):
     )
     
     messages.success(request, 'You have joined the exchange chain!')
-    return redirect('chain_detail', chain_id=chain.id)
+    return redirect('skills:chain_detail', chain_id=chain.id)
+
+@login_required
+def exchange_chains(request):
+    """List all exchange chains the user is part of or can join"""
+    # Get chains where user is a participant
+    user_chains = ExchangeChain.objects.filter(
+        chain_links__user=request.user
+    ).distinct().order_by('-created_at')
+    
+    # Get public chains user can join
+    public_chains = ExchangeChain.objects.filter(
+        status__in=['forming', 'proposed']
+    ).exclude(
+        chain_links__user=request.user
+    ).distinct().order_by('-created_at')
+    
+    context = {
+        'user_chains': user_chains,
+        'public_chains': public_chains,
+    }
+    
+    return render(request, 'skills/exchange_chains.html', context)
 
 # ==================== API ENDPOINTS ====================
 
@@ -642,7 +665,7 @@ def exchange_statistics(request):
     """View exchange statistics (admin-like view)"""
     if not request.user.is_staff:
         messages.error(request, 'Access denied.')
-        return redirect('dashboard')
+        return redirect('skills:dashboard')
     
     # Calculate statistics
     total_exchanges = SkillExchange.objects.count()

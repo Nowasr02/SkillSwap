@@ -26,6 +26,7 @@ urlpatterns = [
     path('chains/create/', views.create_chain, name='create_chain'),
     path('chains/<int:chain_id>/manage/', views.manage_chain, name='manage_chain'),
     path('chains/<int:chain_id>/join/', views.join_chain, name='join_chain'),
+    path('chains/', views.exchange_chains, name='exchange_chains'),
     
     # API Endpoints
     path('api/user-skills/', views.get_user_offered_skills, name='api_user_skills'),

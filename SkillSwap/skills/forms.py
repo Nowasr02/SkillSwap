@@ -1,20 +1,13 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import (
-    Skill, Category, OfferedSkill, NeededSkill, 
+    Skill, OfferedSkill, NeededSkill, 
     SkillExchange, ExchangeChain, ChainLink
 )
 from django.core.exceptions import ValidationError
 
 
-class CategoryForm(forms.ModelForm):
-    
-    class Meta:
-        model = Category
-        fields = "__all__"
-        
 class SkillForm(forms.ModelForm):
-    
     class Meta:
         model = Skill
         fields = "__all__"
@@ -45,6 +38,7 @@ class OfferedSkillForm(forms.ModelForm):
             'hourly_rate_equivalent': 'Hourly Rate ($)',
         }
 
+
 class NeededSkillForm(forms.ModelForm):
     class Meta:
         model = NeededSkill
@@ -67,6 +61,7 @@ class NeededSkillForm(forms.ModelForm):
             'max_hourly_rate': 'Max Hourly Rate ($) - Optional',
         }
 
+
 class SkillExchangeForm(forms.ModelForm):
     class Meta:
         model = SkillExchange
@@ -87,6 +82,7 @@ class SkillExchangeForm(forms.ModelForm):
             }),
             'exchange_type': forms.Select(attrs={'class': 'form-control'}),
         }
+
 
 class ExchangeNegotiationForm(forms.ModelForm):
     initiator_hours_required = forms.DecimalField(
@@ -119,7 +115,8 @@ class ExchangeNegotiationForm(forms.ModelForm):
                 raise ValidationError("Hours cannot exceed 100 per exchange.")
         
         return cleaned_data
-    
+
+
 class ExchangeProposalForm(forms.ModelForm):
     class Meta:
         model = ExchangeChain
@@ -135,6 +132,7 @@ class ExchangeProposalForm(forms.ModelForm):
                 'placeholder': 'Describe the purpose of this exchange chain...'
             }),
         }
+
 
 class ChainLinkForm(forms.ModelForm):
     class Meta:
@@ -155,6 +153,7 @@ class ChainLinkForm(forms.ModelForm):
                 user=user, is_active=True
             )
 
+
 class UserSearchForm(forms.Form):
     username = forms.CharField(
         max_length=150,
@@ -164,12 +163,8 @@ class UserSearchForm(forms.Form):
         })
     )
 
+
 class FilterSkillsForm(forms.Form):
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
     min_rate = forms.DecimalField(
         required=False,
         max_digits=7,
@@ -197,6 +192,7 @@ class FilterSkillsForm(forms.Form):
             'placeholder': 'Search skills...'
         })
     )
+
 
 class RatingForm(forms.Form):
     RATING_CHOICES = [

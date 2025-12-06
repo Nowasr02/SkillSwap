@@ -38,15 +38,14 @@ class FairnessCalculationTestCase(TestCase):
         )
         
         # Create categories
-        self.design_category = Category.objects.create(category='Design')
-        self.tech_category = Category.objects.create(category='Technology')
+        
         
         # Create skills
         self.graphic_design = Skill.objects.create(skill='Graphic Design')
-        self.graphic_design.categories.add(self.design_category)
+        
         
         self.web_dev = Skill.objects.create(skill='Web Development')
-        self.web_dev.categories.add(self.tech_category)
+        
         
         self.content_writing = Skill.objects.create(skill='Content Writing')
         

@@ -11,5 +11,6 @@ urlpatterns = [
     path("ajax/categories/<int:pk>/skills/", views.category_skills, name="category_skills"),
     path("profile/form/", views.profile_form, name="profile_form"),
     path("profile/", views.user_profile, name="user_profile"),
+    
 
 ]

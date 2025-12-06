@@ -1,0 +1,42 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Exchange Chains</h2>
+    
+    <a href="{% url 'skills:create_chain' %}" class="btn btn-primary mb-3">Create New Chain</a>
+    
+    {% if chains %}
+    <div class="row">
+        {% for chain in chains %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ chain.name }}</h5>
+                    <p class="card-text">
+                        <span class="badge bg-{% if chain.status == 'active' %}success{% elif chain.status == 'completed' %}info{% else %}warning{% endif %}">
+                            {{ chain.get_status_display }}
+                        </span>
+                        <br>
+                        <small class="text-muted">
+                            Created: {{ chain.created_at|date:"M d, Y" }}<br>
+                            Participants: {{ chain.participants.count }}<br>
+                            Links: {{ chain.links.count }}
+                        </small>
+                    </p>
+                    <a href="{% url 'skills:chain_detail' chain.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    {% if chain.is_participant %}
+                    <a href="{% url 'skills:manage_chain' chain.id %}" class="btn btn-sm btn-outline-success">Manage</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        You're not part of any exchange chains yet. 
+        <a href="{% url 'skills:find_matches' %}">Find matches</a> to start a chain!
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

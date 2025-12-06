@@ -22,4 +22,4 @@ def home_view(request):
             status='completed'
         ).aggregate(total=Sum('initiator_hours_required'))['total'] or 0,
     }
-    return render(request, 'skills/home.html', context)
+    return render(request, 'main/home.html', context)
