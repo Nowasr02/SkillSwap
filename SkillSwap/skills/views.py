@@ -13,7 +13,7 @@ from .models import (
     SkillExchange, ExchangeChain, ChainLink, BrokerProposal
 )
 from .forms import (
-    SkillForm, OfferedSkillForm, NeededSkillForm, 
+    SkillForm, OfferSkillForm, NeedSkillForm, 
     SkillExchangeForm, ExchangeProposalForm, ChainLinkForm
 )
 from django.db import transaction
@@ -62,64 +62,42 @@ def dashboard(request: HttpRequest):
     return render(request, 'skills/dashboard.html', context)
 
 @login_required
-def offer_skill(request: HttpRequest):
-    if request.method == "POST":
-        form = OfferedSkillForm(request.POST)
+def offer_skill(request):
+    if request.method == 'POST':
+        form = OfferSkillForm(request.POST, user=request.user)
         if form.is_valid():
-            offered_skill = form.save(commit=False)
-            offered_skill.user = request.user
-
-            existing = OfferedSkill.objects.filter(
-                user=request.user, 
-                skill=offered_skill.skill
-            ).first()
-
-            if existing:
-                existing.is_active = True
-                existing.description = offered_skill.description
-                existing.availability = offered_skill.availability
-                existing.hourly_rate_equivalent = offered_skill.hourly_rate_equivalent
-                existing.save()
-                messages.success(request, 'Skill offer updated successfully!')
-            else:
-                offered_skill.save()
-                messages.success(request, 'Skill offered successfully!')
-
-            return redirect('skills:dashboard')
-    else: 
-        form = OfferedSkillForm()
-
-    return render(request, 'skills/offer_skill.html', {'form': form})
+            offer = form.save(commit=False)
+            offer.user = request.user
+            offer.save()
+            messages.success(request, f'You are now offering {offer.skill.skill}!')
+            return redirect('skills:dashboard')  # Adjust redirect as needed
+    else:
+        form = OfferSkillForm(user=request.user)
+    
+    context = {
+        'form': form,
+        'existing_offers': request.user.offered_skills.select_related('skill').all(),
+    }
+    return render(request, 'skills/offer_skill.html', context)
 
 @login_required
-def need_skill(request: HttpRequest):
+def need_skill(request):
     if request.method == 'POST':
-        form = NeededSkillForm(request.POST)
+        form = NeedSkillForm(request.POST, user=request.user)
         if form.is_valid():
-            needed_skill = form.save(commit=False)
-            needed_skill.user = request.user
-
-            existing = NeededSkill.objects.filter(
-                user=request.user,
-                skill=needed_skill.skill
-            ).first()
-            
-            if existing:
-                existing.is_active = True
-                existing.description = needed_skill.description
-                existing.urgency = needed_skill.urgency
-                existing.max_hourly_rate = needed_skill.max_hourly_rate
-                existing.save()
-                messages.success(request, 'Skill need updated successfully!')
-            else:
-                needed_skill.save()
-                messages.success(request, 'Skill need posted successfully!')
-            
+            need = form.save(commit=False)
+            need.user = request.user
+            need.save()
+            messages.success(request, f'You are now requesting {need.skill.skill}!')
             return redirect('skills:dashboard')
     else:
-        form = NeededSkillForm()
+        form = NeedSkillForm(user=request.user)
     
-    return render(request, 'skills/need_skill.html', {'form': form})
+    context = {
+        'form': form,
+        'existing_needs': request.user.needed_skills.select_related('skill').all(),
+    }
+    return render(request, 'skills/need_skill.html', context)
 
 @login_required
 def manage_offered_skills(request):
