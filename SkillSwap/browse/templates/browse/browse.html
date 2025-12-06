@@ -11,24 +11,25 @@
   <input name="q" value="{{ query|default:'' }}">
 
   <div class="filters-row">
- 
-      <select name="offered">
-        <option value="">Offers:</option>
-        {% for s in skills %}
-          <option value="{{ s.id }}" {% if s.id|stringformat:"s" == selected_offered %}selected{% endif %}>{{ s.skill }}</option>
-        {% endfor %}
-      </select>
 
+    <select name="offered">
+      <option value="">Offers:</option>
+      {% for s in skills %}
+      <option value="{{ s.id }}" {% if s.id|stringformat:"s" == selected_offered %}selected{% endif %}>{{ s.skill }}</option>
+      {% endfor %}
+    </select>
 
-
-      <select name="needed">
-        <option value="">Needs:</option>
-        {% for s in skills %}
-          <option value="{{ s.id }}" {% if s.id|stringformat:"s" == selected_needed %}selected{% endif %}>{{ s.skill }}</option>
-        {% endfor %}
-      </select>
+    <select name="needed">
+      <option value="">Needs:</option>
+      {% for s in skills %}
+      <option value="{{ s.id }}" {% if s.id|stringformat:"s" == selected_needed %}selected{% endif %}>{{ s.skill }}</option>
+      {% endfor %}
+    </select>
   </div>
+
+  <button type="submit" class="btn-search">Search</button>
 </form>
+
 
 
 
@@ -95,14 +96,34 @@
       </div>
 
     </div>
+
     {% endfor %}
 
   </div>
 </div>
+{% if profiles %}
+    <div class="cards-grid">
+        {% for profile in profiles %}
+            <!-- كارد البروفايل -->
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if profiles.has_previous %}
+        <a href="?q={{ query }}&offered={{ selected_offered }}&needed={{ selected_needed }}&page={{ profiles.previous_page_number }}"> &laquo; Previous </a>
+    {% endif %}
+
+    {% if profiles.has_next %}
+        <a href="?q={{ query }}&offered={{ selected_offered }}&needed={{ selected_needed }}&page={{ profiles.next_page_number }}">Next &raquo;</a>
+    {% endif %}
+
+{% else %}
+    <p>No profiles found. Try a different search or clear filters.</p>
+{% endif %}
+
 
 
 <style>
-
   .page-wrap h2 {
     display: flex;
     justify-content: center;
@@ -182,78 +203,114 @@
 
 
 
-/* Container form */
-.search-filter-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-/* Search input */
-.search-filter-form input[name="q"] {
-  width: 180px;          /* صغر عرض البحث */
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
-}
-
-/* Filters row */
-.filters-row {
-  display: flex;
-  gap: 10px;             /* المسافة بين الفلاتر */
-  align-items: center;
-}
-
-/* Label styling */
-.filters-row label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-}
-
-/* Select dropdowns */
-.filters-row select {
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
-}
-
-/* زر البحث */
-.search-filter-form button.btn-search {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  background-color: #2b6cb0;
-  color: white;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-/* زر مسح الفلاتر */
-.search-filter-form a.btn-clear {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  color: #333;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-/* Responsive: لو الشاشة صغيرة */
-@media (max-width: 600px) {
+  /* Container form */
   .search-filter-form {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
   }
 
-  .filters-row {
-    flex-wrap: wrap;
+  /* Search input */
+  .search-filter-form input[name="q"] {
+    width: 180px;
+    /* صغر عرض البحث */
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
   }
-}
+
+  /* Filters row */
+  .filters-row {
+    display: flex;
+    gap: 10px;
+    /* المسافة بين الفلاتر */
+    align-items: center;
+  }
+
+  /* Label styling */
+  .filters-row label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+  }
+
+  /* Select dropdowns */
+  .filters-row select {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+  }
+
+  /* زر البحث */
+  .search-filter-form button.btn-search {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2b6cb0;
+    color: white;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+
+  /* زر مسح الفلاتر */
+  .search-filter-form a.btn-clear {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    /* يوسّط العناصر */
+    align-items: center;
+    gap: 10px;
+    /* المسافة بين العناصر */
+    margin-top: 20px;
+    font-size: 14px;
+  }
+
+  .pagination a {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: var(--clr-primary-main);
+    color: white;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+
+  .pagination a:hover {
+    background: var(--clr-primary-hover);
+  }
+
+  .pagination span {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: #f2f4ec;
+    color: #555;
+  }
+
+
+  /* Responsive: لو الشاشة صغيرة */
+  @media (max-width: 600px) {
+    .search-filter-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .filters-row {
+      flex-wrap: wrap;
+    }
+  }
 </style>
 
 
