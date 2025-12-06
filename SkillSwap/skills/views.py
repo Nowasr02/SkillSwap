@@ -29,6 +29,11 @@ from django.db.models import Sum
 
 @login_required
 def cat_skill_add(request):
+    
+    if not request.user.is_staff:
+        messages.success(request, "Only staff members can view this page")
+        return redirect("accounts:sign_in")
+    
     if request.method == 'POST':
         skill_name = request.POST.get('skill', '').strip()
 
