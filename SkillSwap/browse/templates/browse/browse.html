@@ -45,10 +45,12 @@
 
       <div class="upper-section">
 
-        {% if profile.avatar %}
-        <img src="{{ profile.avatar.url }}" alt="Avatar">
+        {% if profile.avatar and profile.avatar.url %}
+        <img src="{{ profile.avatar.url }}" alt="{{ profile.user.username }}" class="profile-avatar">
         {% else %}
-        <img src="{% static '/images/avatar.jpeg' %}">
+        <div class="avatar-placeholder">
+          <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="profile-avatar">
+        </div>
         {% endif %}
 
         <div class="user-name">
@@ -128,7 +130,6 @@
     display: flex;
     justify-content: center;
     padding-bottom: 15px;
-
   }
 
   .cards-grid {
@@ -146,7 +147,6 @@
     padding: 20px;
     background: #fff;
     gap: 5px;
-
   }
 
   .upper-section {
@@ -156,10 +156,29 @@
     gap: 30px;
   }
 
-  img {
-    width: 70px;
-    height: 70px;
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+  }
+
+  .avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e5e7eb;
+  }
+
+  .avatar-placeholder .profile-avatar {
+    width: 100%;
+    height: 100%;
+    border: none;
   }
 
   .user-name {
@@ -200,8 +219,30 @@
     background-color: #f0f0f0;
   }
 
+  /* Container form */
+  .search-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
 
+  /* Search input */
+  .search-filter-form input[name="q"] {
+    width: 180px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
 
+  /* Filters row */
+  .filters-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
 
   /* Container form */
   .search-filter-form {

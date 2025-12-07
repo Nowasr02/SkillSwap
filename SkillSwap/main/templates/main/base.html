@@ -1,6 +1,5 @@
 {% load static %}
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -38,15 +37,75 @@
             box-shadow: none !important;
         }
 
+      
         .navbar {
             backdrop-filter: blur(5px);
             background: rgba(255, 255, 255, 0.1) !important;
+            position: relative;
+            z-index: 1030;
+          
         }
 
+   
+        .navbar .dropdown-menu {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95) !important;
+            z-index: 1050 !important;
+           
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            min-width: 220px !important;
+        }
+
+       
+        .navbar .dropdown-menu[aria-labelledby="userDropdown"] {
+            min-width: 200px !important;
+        }
+
+        
+        .navbar .dropdown-menu[aria-labelledby="notificationDropdown"] {
+            min-width: 320px !important;
+            max-width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+     
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(25%, -25%);
+        }
+
+       
+        main {
+            position: relative;
+            z-index: 1;
+        }
+
+      
         @media (max-width: 992px) {
             .search-container {
                 background: white;
                 border-radius: 10px;
+            }
+
+            .navbar .dropdown-menu {
+                position: static !important;
+                float: none !important;
+                width: 100% !important;
+                margin-top: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+                max-height: none !important;
+            }
+
+            .notification-badge {
+                transform: translate(10%, -25%);
             }
         }
 
@@ -63,84 +122,44 @@
             background: rgba(255, 255, 255, 0.95);
         }
 
-        .search-input {
-            border: none !important;
-            background: transparent !important;
-            border-radius: 50px 0 0 50px !important;
+        
+        .notification-unread {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+            border-left: 3px solid #0d6efd !important;
         }
 
-        .search-input:focus {
-            box-shadow: none !important;
+        .notification-read {
+            opacity: 0.8;
         }
 
-        .navbar {
-            backdrop-filter: blur(5px);
-            background: rgba(255, 255, 255, 0.1) !important;
+        .notification-time {
+            font-size: 0.75rem;
+            color: #6c757d;
         }
 
-        @media (max-width: 992px) {
-            .search-container {
-                background: white;
-                border-radius: 10px;
-            }
+        .notification-message {
+            font-size: 0.875rem;
+            line-height: 1.4;
+            color: #212529;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
+
+        
+        .dropdown-item.notification-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
         }
     </style>
     {% endblock %}
 
 </head>
-
-
-<!-- <body class="d-flex flex-column min-vh-100"> -->
-
-<!-- <body> -->
-
-<!-- <div class="header-wrapper">
-        <div class="logo">
-            <a href="{% url 'main:home_view' %}">SkillSwap</a>
-        </div>
-
-        <div class="nav-links">
-            <div class="navbar">
-                <ul>
-                    <li><a href="{% url 'main:home_view' %}">Home</a></li>
-                    <li><a href="{% url 'browse:browse_view' %}">Browse</a></li>
-                    <li><a href="#">My Swaps</a></li>
-                    <li><a href="#">Messages</a></li>
-                </ul>
-            </div>
-
-
-            <form action="#" method="get">
-                <input type="text" name="q" placeholder="Search users...">
-                <button type="submit">
-                    <span class="material-symbols-outlined">search</span>
-                </button>
-            </form>
-
-
-            <div class="nav-person" id="nav-person">
-                <button id="person-btn" class="person-btn" aria-haspopup="true" aria-expanded="false"
-                    aria-controls="person-menu" type="button">
-                    <span class="material-symbols-outlined">person</span>
-                </button>
-
-                <div id="person-menu" class="person-menu" role="menu" aria-hidden="true">
-                    {% if request.user.is_authenticated %}
-                    <a class="menu-item" href="{% url 'accounts:profile_form' %}">My profile</a>
-                    <form method="post" action="{% url 'accounts:log_out_view' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="menu-item logout-btn">Log out</button>
-                    </form>
-                    {% else %}
-                    <a class="menu-item" href="{% url 'accounts:signin_view' %}">Sign in</a>
-                    <a class="menu-item" href="{% url 'accounts:signup_view' %}">Sign up</a>
-                    {% endif %}
-
-                </div> 
-
-            </div> -->
-
-
 
 <body class="d-flex flex-column min-vh-100">
 
@@ -159,7 +178,7 @@
 
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <!-- Navigation Links -->
+                    
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="/">
@@ -168,7 +187,7 @@
                         </li>
 
                         {% if user.is_authenticated %}
-                        <!-- Skills App Navigation -->
+                     
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="skillsDropdown" role="button"
                                 data-bs-toggle="dropdown">
@@ -202,27 +221,19 @@
                                 <li><a class="dropdown-item" href="{% url 'skills:find_matches' %}">
                                         <i class="bi bi-people"></i> Find Matches
                                     </a></li>
+                                
                             </ul>
                         </li>
 
-                        <!-- Exchanges Navigation -->
+                        
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="exchangesDropdown" role="button"
+                            <a class="nav-link dropdown-toggle" href="#" id="chainsDropdown" role="button"
                                 data-bs-toggle="dropdown">
-                                <i class="bi bi-arrow-repeat"></i> Exchanges
+                                <i class="bi bi-link-45deg"></i> Exchange Chains
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="exchangesDropdown">
-                                <li><a class="dropdown-item" href="{% url 'skills:dashboard' %}#active_exchanges">
-                                        <i class="bi bi-hourglass-split"></i> Active Exchanges
-                                    </a></li>
-                                <li><a class="dropdown-item" href="{% url 'skills:dashboard' %}#completed_exchanges">
-                                        <i class="bi bi-check-circle"></i> Completed Exchanges
-                                    </a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
+                            <ul class="dropdown-menu" aria-labelledby="chainsDropdown">
                                 <li><a class="dropdown-item" href="{% url 'skills:exchange_chains' %}">
-                                        <i class="bi bi-link-45deg"></i> Exchange Chains
+                                        <i class="bi bi-diagram-3"></i> My Chains
                                     </a></li>
                                 <li><a class="dropdown-item" href="{% url 'skills:create_chain' %}">
                                         <i class="bi bi-plus-lg"></i> Create New Chain
@@ -231,7 +242,7 @@
                         </li>
                         {% endif %}
 
-                        <!-- Browse Navigation (Teammate's work) -->
+                    
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'browse:browse_view' %}">
                                 <i class="bi bi-compass"></i> Browse
@@ -239,35 +250,150 @@
                         </li>
                     </ul>
 
-                    <!-- Right Side Navigation -->
                     <div class="navbar-nav ms-auto">
                         {% if user.is_authenticated %}
-                        <!-- User Dropdown -->
+                       
+                        <li class="nav-item dropdown me-3">
+                            <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell fs-5"></i>
+                                {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                <span class="notification-badge badge rounded-pill bg-danger">
+                                    {{ unread_notifications_count }}
+                                </span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+                                <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                                
+                                {% if recent_notifications %}
+                                    {% for notification in recent_notifications %}
+                                    <li>
+                                        {% if notification.notification_type == 'exchange_proposed' and notification.content_object %}
+                                        
+                                        <a class="dropdown-item notification-item {% if not notification.is_read %}notification-unread{% else %}notification-read{% endif %}"
+                                           href="{% url 'skills:exchange_detail' notification.content_object.id %}"
+                                           onclick="markNotificationAsRead('{{ notification.id }}'); return true;">
+                                        {% elif notification.content_object %}
+                                       
+                                        <a class="dropdown-item notification-item {% if not notification.is_read %}notification-unread{% else %}notification-read{% endif %}"
+                                           href="{% url 'skills:exchange_detail' notification.content_object.id %}"
+                                           onclick="markNotificationAsRead('{{ notification.id }}'); return true;">
+                                        {% else %}
+                                        
+                                        <a class="dropdown-item notification-item {% if not notification.is_read %}notification-unread{% else %}notification-read{% endif %}"
+                                           href="{% url 'skills:dashboard' %}"
+                                           onclick="markNotificationAsRead('{{ notification.id }}'); return true;">
+                                        {% endif %}
+                                        
+                                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                                <div class="flex-grow-1 me-2">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="notification-icon">
+                                                            {% if notification.notification_type == 'exchange_proposed' %}
+                                                            <i class="bi bi-arrow-left-right text-primary"></i>
+                                                            {% elif notification.notification_type == 'exchange_accepted' %}
+                                                            <i class="bi bi-hand-thumbs-up text-success"></i>
+                                                            {% elif notification.notification_type == 'exchange_rejected' %}
+                                                            <i class="bi bi-hand-thumbs-down text-danger"></i>
+                                                            {% elif notification.notification_type == 'exchange_completed' %}
+                                                            <i class="bi bi-check-circle text-success"></i>
+                                                            {% elif notification.notification_type == 'exchange_cancelled' %}
+                                                            <i class="bi bi-x-circle text-danger"></i>
+                                                            {% elif notification.notification_type == 'rating_received' %}
+                                                            <i class="bi bi-star-fill text-warning"></i>
+                                                            {% elif notification.notification_type == 'message' %}
+                                                            <i class="bi bi-chat-text text-info"></i>
+                                                            {% else %}
+                                                            <i class="bi bi-info-circle text-secondary"></i>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <strong class="d-block mb-1">{{ notification.title }}</strong>
+                                                            <p class="notification-message mb-1 text-wrap">{{ notification.message|truncatechars:80 }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="notification-time">{{ notification.time_since }}</small>
+                                                    {% if not notification.is_read %}
+                                                    <span class="badge bg-primary badge-sm ms-1">New</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    {% if not forloop.last %}
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    {% endif %}
+                                    {% endfor %}
+                                    
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-center text-primary fw-medium" href="{% url 'skills:notifications' %}">
+                                            <i class="bi bi-list me-1"></i> View All Notifications
+                                        </a>
+                                    </li>
+                                    {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                    <li>
+                                        <a class="dropdown-item text-center text-success" href="{% url 'skills:notifications' %}?mark_all_read=true">
+                                            <i class="bi bi-check-all me-1"></i> Mark All as Read
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li>
+                                        <div class="dropdown-item text-center text-muted py-3">
+                                            <i class="bi bi-bell-slash fs-4 d-block mb-2"></i>
+                                            <span class="d-block">No notifications yet</span>
+                                            <small class="text-muted">When you have notifications, they'll appear here</small>
+                                        </div>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-center" href="{% url 'skills:notifications' %}">
+                                            <i class="bi bi-bell me-1"></i> Notification Center
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+
+                       
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
                                 role="button" data-bs-toggle="dropdown">
-
-
-                                {% if profile.avatar %}
-                                <img src="{{ profile.avatar.url }}" class="rounded-circle me-2" width="30"
-                                    height="30">
-
-                                {% else %}
-                                <img src="{% static 'images/avatar.jpeg' %}" class="rounded-circle me-2" width="30"
-                                    height="30">
+                                {% if user.is_authenticated %}
+                                    {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
+                                    {% elif user.userprofile.avatar %}
+                                    <img src="{{ user.userprofile.avatar.url }}" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
+                                    {% else %}
+                                    <img src="{% static 'images/default-avatar.png' %}" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
+                                    {% endif %}
+                                    {{ user.username }}
                                 {% endif %}
-
-
-
-                                {{ user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="{% url 'accounts:user_profile' %}">
                                         <i class="bi bi-person-circle"></i> My Profile
                                     </a></li>
-                                <!-- <li><a class="dropdown-item" href="{% url 'accounts:profile_form' %}">
-                                        <i class="bi bi-gear"></i> Settings
-                                    </a></li> -->
+                            
+                                <li>
+                                    <a class="dropdown-item position-relative" href="{% url 'skills:notifications' %}">
+                                        <i class="bi bi-bell"></i> Notifications
+                                        {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                        <span
+                                            class="position-absolute top-50 end-0 translate-middle-y badge rounded-pill bg-danger me-2">
+                                            {% if unread_notifications_count > 9 %}
+                                            9+
+                                            {% else %}
+                                            {{ unread_notifications_count }}
+                                            {% endif %}
+                                        </span>
+                                        {% endif %}
+                                    </a>
+                                </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -290,7 +416,7 @@
                         </li>
                         {% else %}
 
-                        <!-- Login/Signup Links -->
+                       
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'accounts:signin_view' %}">
                                 <i class="bi bi-box-arrow-in-right"></i> Sign In
@@ -329,7 +455,7 @@
 
 
 
-    <!-- Footer -->
+   
     <footer class="bg-light py-4 mt-auto">
         <div class="container">
             <div class="row">
@@ -346,8 +472,10 @@
                                 Skill</a></li>
                         <li><a href="{% url 'skills:find_matches' %}" class="text-decoration-none text-muted">Find
                                 Matches</a></li>
-                        <li><a href="{% url 'skills:dashboard' %}" class="text-decoration-none text-muted">Browse
+                        <li><a href="{% url 'browse:browse_view' %}" class="text-decoration-none text-muted">Browse
                                 Skills</a></li>
+                        <li><a href="{% url 'skills:notifications' %}"
+                                class="text-decoration-none text-muted">Notifications</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
@@ -358,12 +486,126 @@
             </div>
             <hr>
             <div class="text-center text-muted">
-                <p class="mb-0">&copy; 2024 SkillSwap. All rights reserved.</p>
+                <p class="mb-0">&copy; 2025 SkillSwap. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+ 
+    <script>
+
+        function markNotificationAsRead(notificationId) {
+            fetch(`/skills/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+             
+                        const notificationElement = document.querySelector(`[onclick*="markNotificationAsRead(${notificationId})"]`);
+                        if (notificationElement) {
+                            notificationElement.classList.remove('notification-unread');
+                            notificationElement.classList.add('notification-read');
+
+                         
+                            const badge = notificationElement.querySelector('.badge.bg-primary');
+                            if (badge) {
+                                badge.remove();
+                            }
+
+                         
+                            updateNotificationCount();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function updateNotificationCount() {
+            fetch("/skills/api/notifications/count/")
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.querySelector('.notification-badge');
+                    const notificationLink = document.querySelector('#notificationDropdown');
+
+                   
+                    if (data.count > 0) {
+                        if (!badge) {
+                            
+                            if (notificationLink) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'notification-badge badge rounded-pill bg-danger';
+                                newBadge.innerHTML = data.count > 9 ? '9+' : data.count;
+                                notificationLink.appendChild(newBadge);
+                            }
+                        } else {
+                           
+                            badge.innerHTML = data.count > 9 ? '9+' : data.count;
+                            badge.style.display = 'inline';
+                        }
+                    } else if (badge) {
+                      
+                        badge.style.display = 'none';
+                    }
+
+                   
+                    const dropdownBadges = document.querySelectorAll('.dropdown-menu .badge.bg-danger');
+                    dropdownBadges.forEach(badge => {
+                        if (data.count > 0) {
+                            badge.innerHTML = data.count > 9 ? '9+' : data.count;
+                            badge.style.display = 'inline';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching notification count:', error));
+        }
+
+      
+        setInterval(updateNotificationCount, 30000);
+
+     
+        document.addEventListener('DOMContentLoaded', function () {
+            updateNotificationCount();
+
+            
+            const notificationItems = document.querySelectorAll('.notification-item');
+            notificationItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const dropdown = document.getElementById('notificationDropdown');
+                    if (dropdown && window.innerWidth < 992) {
+                        const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
+                        if (bsDropdown) {
+                            bsDropdown.hide();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 
     {% block scripts %}
 
