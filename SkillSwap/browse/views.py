@@ -4,6 +4,8 @@ from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from accounts.models import UserProfile
 from skills.models import Skill, Category 
+from django.core.paginator import Paginator
+
 
 # Create your views here.
 
@@ -34,17 +36,23 @@ def browse_view(request : HttpRequest):
         except ValueError:
             pass
 
-    qs = qs.distinct()  # مهم لنتجنب التكرار عند الـ joins
-
-    # جلب كل السكِلز عشان نعرضهم في الفيلتر dropdown
+    qs = qs.distinct()
+    
+    #pagination      
+    page_num = request.GET.get("page", 1)
+    paginator = Paginator(qs, 4)
+    profiles_page = paginator.get_page(page_num)
+    
     skills = Skill.objects.order_by("skill").all()
 
     context = {
-        "profiles": qs,
+        "profiles": profiles_page,
         "skills": skills,
         "query": query,
         "selected_offered": offered_id,
         "selected_needed": needed_id,
+        "paginator": paginator,
+        "page_obj": profiles_page,
     }
         
         
