@@ -13,64 +13,72 @@ class SkillForm(forms.ModelForm):
         fields = "__all__"
 
 
-class OfferedSkillForm(forms.ModelForm):
+class OfferSkillForm(forms.ModelForm):
     class Meta:
         model = OfferedSkill
         fields = ['skill', 'description', 'availability', 'hourly_rate_equivalent']
         widgets = {
-            'skill': forms.Select(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 3,
-                'placeholder': 'Describe what you can do, your experience, examples...'
-            }),
-            'availability': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'e.g., Weekends, Evenings after 6 PM'
-            }),
-            'hourly_rate_equivalent': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'min': '1'
-            }),
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'availability': forms.TextInput(attrs={'placeholder': 'e.g., Weekends, Evenings'}),
         }
-        labels = {
-            'hourly_rate_equivalent': 'Hourly Rate ($)',
-        }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+           
+            already_offering = user.offered_skills.values_list('skill_id', flat=True)
+            available_skills = Skill.objects.exclude(id__in=already_offering)
+            
+            self.fields['skill'].queryset = available_skills
+            self.fields['skill'].empty_label = "Select a skill to offer"
+            
+
+            if already_offering.exists():
+                self.fields['skill'].help_text = f"You're already offering {already_offering.count()} skill(s)"
+        else:
+            self.fields['skill'].queryset = Skill.objects.none()
 
 
-class NeededSkillForm(forms.ModelForm):
+class NeedSkillForm(forms.ModelForm):
     class Meta:
         model = NeededSkill
         fields = ['skill', 'description', 'urgency', 'max_hourly_rate']
         widgets = {
-            'skill': forms.Select(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 3,
-                'placeholder': 'Describe what you need, timeline, specific requirements...'
-            }),
-            'urgency': forms.Select(attrs={'class': 'form-control'}),
-            'max_hourly_rate': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'min': '1'
-            }),
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'max_hourly_rate': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
         }
-        labels = {
-            'max_hourly_rate': 'Max Hourly Rate ($) - Optional',
-        }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+           
+            already_needing = user.needed_skills.values_list('skill_id', flat=True)
+            available_skills = Skill.objects.exclude(id__in=already_needing)
+            
+            self.fields['skill'].queryset = available_skills
+            self.fields['skill'].empty_label = "Select a skill you need"
+            
+            if already_needing.exists():
+                self.fields['skill'].help_text = f"You're already requesting {already_needing.count()} skill(s)"
+        else:
+           
+            self.fields['skill'].queryset = Skill.objects.all()
 
 
-class SkillExchangeForm(forms.ModelForm):
+class ProposeExchangeForm(forms.ModelForm):
+    """Form for proposing an exchange to someone who needs a skill"""
     class Meta:
         model = SkillExchange
-        fields = ['terms', 'proposed_start_date', 'proposed_end_date', 'exchange_type']
+        fields = ['skill_from_responder', 'terms', 'proposed_start_date', 'proposed_end_date']
         widgets = {
             'terms': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
-                'placeholder': 'Specify the details of the exchange...'
+                'placeholder': 'Describe the exchange details, schedule, expectations...'
             }),
             'proposed_start_date': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -80,8 +88,21 @@ class SkillExchangeForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date'
             }),
-            'exchange_type': forms.Select(attrs={'class': 'form-control'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        self.responder = kwargs.pop('responder', None)  
+        self.needed_skill = kwargs.pop('needed_skill', None)  
+        super().__init__(*args, **kwargs)
+        
+        if self.responder and self.needed_skill:
+            
+            self.fields['skill_from_responder'].queryset = OfferedSkill.objects.filter(
+                user=self.responder,
+                is_active=True
+            )
+            self.fields['skill_from_responder'].label = "Select the skill you'll offer"
+            self.fields['skill_from_responder'].help_text = "Choose which of your skills to exchange"
 
 
 class ExchangeNegotiationForm(forms.ModelForm):
@@ -148,7 +169,7 @@ class ChainLinkForm(forms.ModelForm):
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
-            # Limit gives_skill to user's offered skills
+           
             self.fields['gives_skill'].queryset = OfferedSkill.objects.filter(
                 user=user, is_active=True
             )
