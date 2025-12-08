@@ -1,0 +1,11 @@
+[
+{
+  "model": "accounts.userprofile",
+  "pk": 9,
+  "fields": {
+    "user": 15,
+    "avatar": "images/flower1.jpeg",
+    "bio": "im a web developer"
+  }
+}
+]
